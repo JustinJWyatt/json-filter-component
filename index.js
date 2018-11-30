@@ -15,22 +15,27 @@ class JSONFilter
 
         if (options.data.ajax)
         {
-            T.ajax({
-                method: options.data.ajax.method,
-                url: options.data.ajax.url,
-                data: options.data.ajax.data,
-                success: function (res)
-                {
-                    if (!Array.isArray(res))
-                    {
+            var request = new XMLHttpRequest();
+             request.onload = function(){
+                if(this.readyState === 4){
+    
+                    if(this.status === 200){
+                       var res = JSON.parse(this.responseText);
+                        if (!Array.isArray(res))
+                        {
+                            throw '';
+                        }
+                         data = res;
+                         filter(data);
+                     }else{
                         throw '';
                     }
-
-                    data = res;
-
-                    filter(data);
                 }
-            });
+            }
+            
+            request.open('GET', options.data.ajax.url, true);
+            
+            request.send();
         }
 
         if (options.data.json)

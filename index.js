@@ -15,33 +15,22 @@ class JSONFilter
 
         if (options.data.ajax)
         {
-
-            var request = new XMLHttpRequest();
-
-            request.onload = function(){
-                if(this.readyState === 4){
-    
-                    if(this.status === 200){
-                       var res = JSON.parse(this.responseText);
-
-                       if (!Array.isArray(res))
-                        {
-                            throw '';
-                        }
-
-                        data = res;
-
-                        filter(data);
-
-                    }else{
+            T.ajax({
+                method: options.data.ajax.method,
+                url: options.data.ajax.url,
+                data: options.data.ajax.data,
+                success: function (res)
+                {
+                    if (!Array.isArray(res))
+                    {
                         throw '';
                     }
+
+                    data = res;
+
+                    filter(data);
                 }
-            }
-
-            request.open('GET', options.data.ajax.url, true);
-
-            request.send();
+            });
         }
 
         if (options.data.json)
@@ -139,11 +128,13 @@ class JSONFilter
                 {
                     var keyIndex = keys.findIndex(x => x.key === key);
 
+                    keys[keyIndex].filter = e.target.value;
+
+                    var model = publishModel(data);
+
                     window.setTimeout(function ()
                     {
-                        keys[keyIndex].filter = e.target.value;
-
-                        options.onUpdateTarget(publishModel(data));
+                        options.onUpdateTarget(model);
 
                     }, 1000);
                 });

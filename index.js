@@ -1,48 +1,3 @@
-window.customElements.define('json-filter', class extends HTMLElement{
-    constructor(){
-        super();
-
-        var element = this;
-
-        var container = document.createElement('legend-container');
-
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-
-        var json = element.getAttribute('json');
-
-        if(!json){
-            throw '';
-        }
-
-        var request = new XMLHttpRequest();
-
-        request.onload = function(){
-            if(this.readyState === 4){
-
-                if(this.status === 200){
-                    Function(element.getAttribute('onTargetUpdate') + '('+ this.responseText +')')();
-
-                    var keys = Object.keys(JSON.parse(this.responseText)[0]);
-
-                    for(var key in keys){
-                        var label = document.createElement('label');
-                        label.innerHTML = keys[key];
-                        container.appendChild(label);
-                    }
-                }else{
-                    throw '';
-                }
-            }
-        }
-
-        request.open('GET', json, true);
-
-        request.send();
-
-    }
-});
-
 class JSONFilter
 {
     constructor(options)
@@ -83,6 +38,10 @@ class JSONFilter
                     }
                 }
             }
+
+            request.open('GET', options.data.ajax.url, true);
+
+            request.send();
         }
 
         if (options.data.json)

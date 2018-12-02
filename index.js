@@ -134,7 +134,7 @@ class JSONFilter extends HTMLElement
                                     </div>
                                  </div>`;
 
-            element.appendChild(template.content.querySelector('.json-filter-label-container').cloneNode(true));
+            element.appendChild(template.content.querySelector('.json-filter').cloneNode(true));
 
             for (var key in Object.keys(data[0]))
             {
@@ -195,6 +195,12 @@ class JSONFilter extends HTMLElement
 
                     }, 1000);
                 });
+                
+                label.appendChild(labelCheckBox);
+                
+                label.appendChild(labelTextBox);
+                
+                element.querySelector('.json-filter-label-container').push(label);
             }
         }
     }

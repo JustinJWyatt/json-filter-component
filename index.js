@@ -200,7 +200,7 @@ class JSONFilter extends HTMLElement
                 
                 label.appendChild(labelTextBox);
                 
-                element.querySelector('.json-filter-label-container').push(label);
+                element.querySelector('.json-filter-label-container').appendChild(label);
             }
         }
     }

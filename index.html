@@ -6,21 +6,15 @@
 </head>
 <body>
 
-
+        <json-filter url="https://https://jsonplaceholder.typicode.com/users"
+                     onUpdateTarget="onUpdateTarget"></json-filter>
+                     
         <script src="index.js"></script>
 
         <script>
-            var filter = new JSONFilter({
-                data: {
-                    ajax:{
-                        method: 'GET',
-                        url: 'https://jsonplaceholder.typicode.com/users',
-                    }
-                },
-                onUpdateTarget = function(data){
-                    console.log(data);
-                }
-            });
+            function onUpdateTarget(data){
+                console.log(data);
+            }
         </script>
 
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

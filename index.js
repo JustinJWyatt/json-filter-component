@@ -88,20 +88,60 @@ class JSONFilter extends HTMLElement
         {
             var template = document.createElement('template');
 
-            template.innerHTML = `<div class="legend">
+            template.innerHTML = `<style>
+                                    .json-filter {
+                                        background-color: #122B4D;
+                                        height: 150px;
+                                        width: 390px;
+                                        float: right;
+                                    }
+
+                                    .json-filter-header {
+                                        color: white;
+                                        margin: 0 auto;
+                                        width: 50%;
+                                        text-align: center;
+                                    }
+
+                                    .json-filter-label-container {
+                                        display: flex;
+                                        flex-direction: column;
+                                        overflow-y: auto;
+                                        height: 120px;
+                                        margin-left: 10%;
+                                        margin-top: 5px;
+                                    }
+
+                                    .json-filter-label {
+                                        margin-bottom: 5px;
+                                    }
+
+                                        .json-filter-label input[type="text"] {
+                                            background-color: #274368;
+                                            color: white;
+                                            border: none;
+                                            padding: 5px;
+                                            width: 80%;
+                                        }
+
+                                    ::placeholder {
+                                        color: white;
+                                    }
+                                </style>
+                                 <div class="legend">
                                     <h4 class="legend-header">Table Title</h4>
                                     <div class="legend-label-container">
                                     </div>
                                  </div>`;
 
-            element.appendChild(template.content.querySelector('.legend-label-container').cloneNode(true));
+            element.appendChild(template.content.querySelector('.json-filter-label-container').cloneNode(true));
 
             for (var key in Object.keys(data[0]))
             {
                 keys.push({ key: key, hidden: false, filter: '' });
 
                 var label = document.createElement('label');
-                label.classList.add('legend-label');
+                label.classList.add('json-filter-label');
 
                 var labelCheckBox = document.createElement('input');
                 labelCheckBox.type = 'checkbox';

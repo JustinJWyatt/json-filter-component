@@ -1,94 +1,19 @@
-class JSONFilter extends HTMLElement
-{
-    constructor()
-    {
-        super();
+customElements.define('json-filter', class extends HTMLElement{
 
-        var keys = [], data = [];
+    constructor(){
+        super();
 
         var element = this;
 
-        var url = element.getAttribute('url');
+        this.keys = [];
 
-        var onUpdateTarget = element.getAttribute('onUpdateTarget');
-
-        //{ key: "ID", hidden: true, filter: "" }
-        //{ key: "Name", hidden: false, filter: "Justin" }
-        //{ key: "Organization", hidden: false, filter: "HR" }
-
-        if (!url || !onUpdateTarget)
-        {
+        if(!this.getAttribute('onUpdateTarget') || !this.getAttribute('url')){
             throw '';
         }
 
-        var request = new XMLHttpRequest();
+        var template = document.createElement('template');
 
-        request.onload = function ()
-        {
-            if (this.readyState === 4)
-            {
-                if (this.status === 200)
-                {
-                    var res = JSON.parse(this.responseText);
-                    if (!Array.isArray(res))
-                    {
-                        throw '';
-                    }
-                    data = res;
-                    filter(data);
-                } else
-                {
-                    throw '';
-                }
-            }
-        }
-
-        request.open('GET', url, true);
-
-        request.send();
-
-        //This function is called everytime an update is triggered, like if they click a checkbox or type into the textbox
-        function publishModel(data)
-        {
-            var model = data;
-
-            var hidden = keys.filter(x => x.hidden);
-
-            if (hidden)
-            {
-                //Deletes from the model all of the properties
-                hidden.forEach((hiddenValue, hiddenIndex, hiddenArray) =>
-                {
-                    model.map((modelValue, modelIndex, modelArray) =>
-                    {
-                        delete modelValue[hiddenValue.key];
-                    });
-                });
-            }
-
-            var filter = keys.filter(x => x.filter);
-
-            var temp = [];
-
-            if (filter)
-            {
-                //If I have multiple filters, I can concat them into the model and return it.
-                filter.forEach((filterValue, filterIndex, filterArray) =>
-                {
-                    var result = model.filter(x => x[filterValue.key].toLowerCase().indexOf(filterValue.filter.toLowerCase()) !== -1);
-
-                    temp = temp.concat(result);
-                });
-            }
-
-            return model.concat(temp);
-        }
-
-        function filter(data)
-        {
-            var template = document.createElement('template');
-
-            template.innerHTML = `<style>
+        template.innerHTML = `<style>
                                     .json-filter {
                                         background-color: #122B4D;
                                         height: 150px;
@@ -125,85 +50,119 @@ class JSONFilter extends HTMLElement
                                         }
 
                                     ::placeholder {
-                                        color: white;
+                                        color: darkgray;
                                     }
                                 </style>
-                                 <div class="legend">
-                                    <h4 class="legend-header">Table Title</h4>
-                                    <div class="legend-label-container">
+                                 <div class="json-filter">
+                                    <h4 class="json-filter-header">Table Title</h4>
+                                    <div class="json-filter-label-container">
                                     </div>
                                  </div>`;
 
-            element.appendChild(template.content.querySelector('.json-filter').cloneNode(true));
+        this.appendChild(template.content.cloneNode(true));
 
-            for (var key in Object.keys(data[0]))
-            {
-                keys.push({ key: key, hidden: false, filter: '' });
+        var request = new XMLHttpRequest();
 
-                var label = document.createElement('label');
-                label.classList.add('json-filter-label');
+        request.onload = function() {
+            if(this.readyState === 4){
+                if(this.status === 200){
+                    var data = JSON.parse(this.responseText);
+                    element.filter(data);
 
-                var labelCheckBox = document.createElement('input');
-                labelCheckBox.type = 'checkbox';
-                labelCheckBox.setAttribute('checked', 'checked');
-                labelCheckBox.setAttribute('name', key);
-
-                labelCheckBox.addEventListener('click', function (e)
-                {
-                    var keyIndex = keys.findIndex(x => x.key === key);
-
-                    if (e.target.attributes['checked'].value === 'checked')
-                    {
-                        //uncheck
-                        e.target.attributes['checked'].value = '';
-
-                        keys[keyIndex].hidden = true;
-
-                        keys[keyIndex].filter = '';
-
-                        var model = publishModel(data);
-
-                        Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
+                    if(!Array.isArray(data)){
+                        throw '';
                     }
-                    else
-                    {
-                        //check
-                        e.target.attributes['checked'].value = 'checked';
-
-                        keys[keyIndex].hidden = false;
-
-                        var model = publishModel(data);
-
-                        Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
-                    }
-                });
-
-                var labelTextBox = document.createElement('input');
-                labelTextBox.type = 'text';
-
-                labelTextBox.addEventListener('keyup', function (e)
-                {
-                    var keyIndex = keys.findIndex(x => x.key === key);
-
-                    keys[keyIndex].filter = e.target.value;
-
-                    var model = publishModel(data);
-
-                    window.setTimeout(function ()
-                    {
-                        Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
-
-                    }, 1000);
-                });
-                
-                label.appendChild(labelCheckBox);
-                
-                label.appendChild(labelTextBox);
-                
-                element.querySelector('.json-filter-label-container').appendChild(label);
+                }
             }
         }
-    }
-}
+        
+        request.open('GET', this.getAttribute('url'), true);
 
-customElements.define('json-filter', JSONFilter);
+        request.send();
+    }
+
+    filter(data){
+
+        var firstRow = data[0];
+        
+        var element = this;
+
+        Object.keys(firstRow).forEach(function(value, index, array){
+
+            var onUpdateTarget = element.getAttribute('onUpdateTarget');
+
+            element.keys.push({ key: value, hidden: false, filter: '' });
+
+            var label = document.createElement('span');
+            label.classList.add('json-filter-label');
+
+            var labelTextBox = document.createElement('input');
+            labelTextBox.type = 'textbox';
+            labelTextBox.setAttribute('name', value);
+            labelTextBox.placeholder = value;
+
+            var timeout = null;
+
+            labelTextBox.addEventListener('keyup', function(e){
+                var keyIndex = element.keys.findIndex(x => x.key === value);
+                element.keys[keyIndex].filter = e.target.value;
+                clearTimeout(timeout);
+                var model = element.publishModel(data);
+                timeout = window.setTimeout(function(){
+                    new Function(onUpdateTarget + '(' + JSON.stringify(model) +')')();
+                }, 1000);
+            });
+            
+            label.appendChild(labelTextBox);
+
+            var labelCheckBox = document.createElement('input');
+            labelCheckBox.type = 'checkbox';
+            labelCheckBox.setAttribute('checked', 'checked');
+            labelCheckBox.setAttribute('name', value);
+
+            labelCheckBox.addEventListener('click', function(e){
+                var keyIndex = element.keys.findIndex(x => x.key === value);
+                if (e.target.attributes['checked'].value === 'checked'){
+                    //uncheck
+                    e.target.attributes['checked'].value = '';
+                    element.keys[keyIndex].hidden = true;
+                    element.keys[keyIndex].filter = '';
+                    var model = element.publishModel(data);
+                    Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
+                }
+                else{
+                    //check
+                    e.target.attributes['checked'].value = 'checked';
+                    element.keys[keyIndex].hidden = false;
+                    var model = element.publishModel(data);
+                    Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
+                }
+            });
+
+            label.appendChild(labelCheckBox);
+
+            element.querySelector('.json-filter-label-container').appendChild(label);
+        });
+    }
+
+    publishModel(data){
+        var model = data;
+        var hidden = this.keys.filter(x => x.hidden);
+        if(hidden){
+            hidden.forEach(function(hiddenValue, hiddenIndex, hiddenArray){
+                model.map(function(modelValue, modelIndex, modelArray){
+                    delete modelValue[hiddenValue.key];
+                });
+            });
+        }
+        var filter = this.keys.filter(x => x.filter);
+        var temp = [];
+        if(filter){
+            filter.forEach(function(filterValue, filterIndex, filterArray){
+                var result = model.filter(x => x[filterValue.key].toLowerCase().indexOf(filterValue.filter.toLowerCase()) !== -1);
+                temp = temp.concat(result);
+            });
+        }
+        return temp;
+    }
+});

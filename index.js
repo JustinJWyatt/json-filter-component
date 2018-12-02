@@ -161,7 +161,9 @@ class JSONFilter extends HTMLElement
 
                         keys[keyIndex].filter = '';
 
-                        Function(onUpdateTarget + '(' + JSON.stringify(publishModel(data)) + ')')();
+                        var model = publishModel(data);
+
+                        Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
                     }
                     else
                     {
@@ -170,7 +172,9 @@ class JSONFilter extends HTMLElement
 
                         keys[keyIndex].hidden = false;
 
-                        Function(onUpdateTarget + '(' + JSON.stringify(publishModel(data)) + ')')();
+                        var model = publishModel(data);
+
+                        Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
                     }
                 });
 
@@ -187,7 +191,7 @@ class JSONFilter extends HTMLElement
 
                     window.setTimeout(function ()
                     {
-                        Function(onUpdateTarget + '(' + JSON.stringify(publishModel(data)) + ')')();
+                        Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
 
                     }, 1000);
                 });

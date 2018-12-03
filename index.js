@@ -41,13 +41,14 @@ customElements.define('json-filter', class extends HTMLElement{
                                         margin-bottom: 5px;
                                     }
 
-                                        .json-filter-label input[type="text"] {
-                                            background-color: #274368;
-                                            color: white;
-                                            border: none;
-                                            padding: 5px;
-                                            width: 80%;
-                                        }
+                                    .json-filter-label-text {
+                                        background-color: #274368;
+                                        color: white;
+                                        border: none;
+                                        padding: 5px;
+                                        width: 80%;
+                                        margin-right: 5px;
+                                    }
 
                                     ::placeholder {
                                         color: darkgray;
@@ -86,6 +87,8 @@ customElements.define('json-filter', class extends HTMLElement{
         var firstRow = data[0];
         
         var element = this;
+        
+        var onUpdateTarget = element.getAttribute('onUpdateTarget');
 
         Object.keys(firstRow).forEach(function(value, index, array){
 
@@ -97,6 +100,7 @@ customElements.define('json-filter', class extends HTMLElement{
             label.classList.add('json-filter-label');
 
             var labelTextBox = document.createElement('input');
+            labelTextBox.classList.add('json-filter-label-text');
             labelTextBox.type = 'textbox';
             labelTextBox.setAttribute('name', value);
             labelTextBox.placeholder = value;
@@ -128,14 +132,14 @@ customElements.define('json-filter', class extends HTMLElement{
                     element.keys[keyIndex].hidden = true;
                     element.keys[keyIndex].filter = '';
                     var model = element.publishModel(data);
-                    Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
+                    new Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
                 }
                 else{
                     //check
                     e.target.attributes['checked'].value = 'checked';
                     element.keys[keyIndex].hidden = false;
                     var model = element.publishModel(data);
-                    Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
+                    new Function(onUpdateTarget + '(' + JSON.stringify(model) + ')')();
                 }
             });
 
@@ -143,26 +147,46 @@ customElements.define('json-filter', class extends HTMLElement{
 
             element.querySelector('.json-filter-label-container').appendChild(label);
         });
+        
+        new Function(onUpdateTarget + '(' + JSON.stringify(element.publishModel(data)) + ')')();
     }
 
-    publishModel(data){
-        var model = data;
+    
+    publishModel(data)
+    {
+        //I have to parse this data into JSON so I can do a shallow copy (and not a deep copy, else I would be changing a referenced object)
+        var model = JSON.parse(JSON.stringify(data))
         var hidden = this.keys.filter(x => x.hidden);
-        if(hidden){
-            hidden.forEach(function(hiddenValue, hiddenIndex, hiddenArray){
-                model.map(function(modelValue, modelIndex, modelArray){
+        if (hidden)
+        {
+            hidden.forEach(function (hiddenValue, hiddenIndex, hiddenArray)
+            {
+                model.map(function (modelValue, modelIndex, modelArray)
+                {
                     delete modelValue[hiddenValue.key];
                 });
             });
         }
         var filter = this.keys.filter(x => x.filter);
-        var temp = [];
-        if(filter){
-            filter.forEach(function(filterValue, filterIndex, filterArray){
-                var result = model.filter(x => x[filterValue.key].toLowerCase().indexOf(filterValue.filter.toLowerCase()) !== -1);
+        if (filter)
+        {
+            var temp = [];
+
+            filter.forEach(function (filterValue, filterIndex, filterArray)
+            {
+                var value = filterValue.filter.toLowerCase();
+
+                //filter on each key for value and if it isn't already in temp
+                var result = model.filter(modelProperty => modelProperty[filterValue.key].toString().toLowerCase().indexOf(value) !== -1 && !temp.some(tempProperty => tempProperty[filterValue.key] === modelProperty[filterValue.key]));
+
                 temp = temp.concat(result);
             });
+
+            if (temp.length)
+            {
+                model = temp;
+            }
         }
-        return temp;
+        return model;
     }
 });

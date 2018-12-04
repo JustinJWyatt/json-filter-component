@@ -19,26 +19,30 @@ customElements.define('json-filter', class extends HTMLElement{
                                         height: 150px;
                                         width: 390px;
                                         float: right;
+                                        margin-top: 10px;
+                                        padding-top: 5px;
+                                        overflow-y: auto;
+                                        padding-bottom: 10px;
                                     }
 
                                     .json-filter-header {
                                         color: white;
-                                        margin: 0 auto;
-                                        width: 50%;
                                         text-align: center;
                                     }
 
                                     .json-filter-label-container {
                                         display: flex;
                                         flex-direction: column;
-                                        overflow-y: auto;
-                                        height: 120px;
-                                        margin-left: 10%;
                                         margin-top: 5px;
+                                        margin: 0 auto;
+                                        width: 85%;
                                     }
 
                                     .json-filter-label {
                                         margin-bottom: 5px;
+                                        display: inherit;
+                                        position: relative;
+                                        padding-left: 22px;
                                     }
 
                                     .json-filter-label-text {
@@ -46,16 +50,17 @@ customElements.define('json-filter', class extends HTMLElement{
                                         color: white;
                                         border: none;
                                         padding: 5px;
-                                        width: 80%;
-                                        margin-right: 5px;
+                                        width: 100%;
+                                        margin-left: 13px;
                                     }
 
                                     ::placeholder {
                                         color: darkgray;
                                     }
+
                                 </style>
                                  <div class="json-filter">
-                                    <h4 class="json-filter-header">Table Title</h4>
+                                    <h4 class="json-filter-header">${element.getAttribute('title')}</h4>
                                     <div class="json-filter-label-container">
                                     </div>
                                  </div>`;
